@@ -1,0 +1,20 @@
+ 
+# Environment variables
+.getenv
+ 
+# Streamlit secrets
+
+.streamlit/secrets.toml
+.env
+.DS_Store
+
+# python / venv
+venv/
+__pycache__/
+*.pyc
+
+# streamlit secrets
+.streamlit/secrets.toml
+
+# dotenv (optional)
+.env
