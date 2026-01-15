@@ -7,36 +7,36 @@ import os
 st.set_page_config(page_title="AI Chatbot", page_icon="⚡", layout="wide")
 st.markdown("<style>.stApp{max-width:1100px;margin:0 auto;}</style>", unsafe_allow_html=True)
  
-# Supabase setup
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# ===== CONFIG (SAFE FOR RENDER) =====
+def get_config(name):
+    try:
+        return st.secrets.get(name)   # works locally if secrets.toml exists
+    except Exception:
+        return os.getenv(name)        # works on Render
+
+GROQ_API_KEY = get_config("GROQ_API_KEY")
+SUPABASE_URL = get_config("SUPABASE_URL")
+SUPABASE_KEY = get_config("SUPABASE_KEY")
+
+missing = []
+if not GROQ_API_KEY:
+    missing.append("GROQ_API_KEY")
+if not SUPABASE_URL:
+    missing.append("SUPABASE_URL")
+if not SUPABASE_KEY:
+    missing.append("SUPABASE_KEY")
+
+if missing:
+    st.error(
+        "Missing config: " + ", ".join(missing) +
+        ". Add them in Render → Environment Variables."
+    )
+    st.stop()
+
+# Create clients (ONLY after validation)
+groq_client = Groq(api_key=GROQ_API_KEY)
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-GROQ_API_KEY = st.secrets.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY"))
-if not GROQ_API_KEY:
-    st.error("GROQ_API_KEY not found. Add it to .streamlit/secrets.toml (local) or Streamlit Cloud secrets.")
-    st.stop()
-
- 
-# Get Groq API key
-def get_key():
-    try:
-        return st.secrets["GROQ_API_KEY"]
-    except Exception:
-        return os.getenv("GROQ_API_KEY")
- 
-GROQ_API_KEY = get_key()
-if not GROQ_API_KEY:
-    st.error("Groq API key not found.")
-    st.stop()
- 
-try:
-    groq_client = Groq(api_key=GROQ_API_KEY)
-except Exception as e:
-    st.error(f"Failed to initialize Groq: {e}")
-    st.stop()
- 
 # Session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
